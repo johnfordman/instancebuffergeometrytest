@@ -131,12 +131,14 @@ vec3 curlNoise( vec3 p ){
 }
 
 void main() {
-     vec3 newPosition = position + snoise((offset * 10.) + u_time);
-//    float speed = 5.;
-//   vec3 newPostion = position + offset;
-////   newPostion = newPostion + curlNoise(id+u_time/10.);
-//   newPostion.y += (snoise(vec3(newPostion.x, u_time * speed + newPostion.y, newPostion.z ) * .04) * 6.)* 4.;
-//   newPostion.z += (snoise(vec3(newPostion.x,newPostion.y, u_time * speed + newPostion.z ) * .04) * 6.)* 4.;
-//   newPostion.x += (snoise(vec3(u_time * speed + newPostion.x,newPostion.y, newPostion.z ) * .04) * 6.)* 4.;
+//     vec3 newPosition = position + snoise((offset * 10.) + u_time);
+    float speed = 5.;
+    vec3 vOffset = offset;
+//    newPosition = newPosition + snoise(offset + u_time)* 10.;
+   vOffset.y += (snoise(vec3(vOffset.x, u_time * speed + vOffset.y, vOffset.z ) * .04) * 6.)* 4.;
+   vOffset.z += (snoise(vec3(vOffset.x,vOffset.y, u_time * speed + vOffset.z ) * .04) * 6.)* 4.;
+   vOffset.x += (snoise(vec3(u_time * speed + vOffset.x,vOffset.y, vOffset.z ) * .04) * 6.)* 4.;
+   vec3 newPosition = position + vOffset;
+
    gl_Position = projectionMatrix * modelViewMatrix * vec4( newPosition, 1.0);
 }
