@@ -18,6 +18,7 @@ class Scene {
     this.init()
     this.initScene()
     this.initPostProcessing()
+    this.initEvent()
     window.addEventListener('resize', this.onWindowResize.bind(this), false)
     this.onWindowResize()
     this.renderer.animate( this.render.bind(this) )
@@ -25,6 +26,13 @@ class Scene {
   init() {
     this.camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 0.1, 1000 )
     this.camera.position.z = 600
+
+    // Mouse 
+    this.mouse = new THREE.Vector2(0,0)
+    this.direction_mouse    = new THREE.Vector3(0, 0, 0)
+    this.cameraPosition_mouse = new THREE.Vector3(0, 0, 0)
+    this.cameraEasing_mouse = 10
+
     // controls
     new OrbitControls(this.camera)
     this.scene = new THREE.Scene()
@@ -34,17 +42,19 @@ class Scene {
     this.container.appendChild( this.renderer.domElement )
   }
   initScene() {
-    const bufferGeometry = new THREE.BoxBufferGeometry(1, 1, 1)
+    const bufferGeometry = new THREE.SphereBufferGeometry(1, 1, 1)
     // copying data from a simple box geometry, but you can specify a custom geometry if you want
     this.geometry = new THREE.InstancedBufferGeometry()
     this.geometry.attributes.position = bufferGeometry.attributes.position
     this.offsets = []
-
+    // const colors = []
+    this.colors = []
+    const pink = new THREE.Color( '#F4B3C3' ) 
     const vector = new THREE.Vector4()
     let id = 0
     const ids = []
     let x, y, z
-    for ( let i = 0; i < 1500; i ++ ) {
+    for ( let i = 0; i < 4500; i ++ ) {
       // offsets
       x = Math.random() * 800 - 400
       y = Math.random() * 800 - 400
@@ -52,12 +62,16 @@ class Scene {
       vector.set( x, y, z, 0 ).normalize()
       vector.multiplyScalar( 5 )
       this.offsets.push( x + vector.x, y + vector.y, z + vector.z )
+      // this.colors.push(Math.random(), Math.random(), Math.random() )      
+      this.colors.push(pink.r, pink.g, pink.b, Math.random() )      
       id = i;
       ids.push(i)
     }
     const offsetAttribute = new THREE.InstancedBufferAttribute( new Float32Array( this.offsets ), 3 )
+    const colorAttribute = new THREE.InstancedBufferAttribute( new Float32Array( this.colors ), 4 )
     const idAttribute = new THREE.InstancedBufferAttribute( new Float32Array( ids ), 3 )
     this.geometry.addAttribute( 'offset', offsetAttribute )
+    this.geometry.addAttribute( 'color', colorAttribute )
     this.geometry.addAttribute( 'id', idAttribute )
     console.log(this.geometry);
     this.uniforms = {
@@ -81,7 +95,7 @@ class Scene {
     //Create Shader Passes
     this.renderScene = new RenderPass(this.scene, this.camera);
     this.copyShader = new ShaderPass(THREE.CopyShader);
-    this.bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 3, .2, 0.1);
+    this.bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 7, .7, 0.01);
     //Add Shader Passes to Composer - order is important
     this.composer.addPass(this.renderScene);
     this.composer.addPass(this.bloomPass);
@@ -90,8 +104,23 @@ class Scene {
     this.copyShader.renderToScreen = true;
   }
 
+  initEvent () {
+    document.addEventListener('mousemove',(e) => {
+      this.mouse.x = (event.clientX / window.innerWidth- .5) * 2;
+      this.mouse.y = -(event.clientY / window.innerHeight - .5) * 2;
+  });
+  }
+
   render() {
     this.material.uniforms.u_time.value += 0.025
+
+
+    this.direction_mouse.subVectors(this.mouse, this.cameraPosition_mouse)
+    this.direction_mouse.multiplyScalar(.06)
+    this.cameraPosition_mouse.addVectors(this.cameraPosition_mouse, this.direction_mouse)
+    this.camera.position.x =  this.cameraPosition_mouse.x  * this.cameraEasing_mouse * 20
+    this.camera.position.y =  this.cameraPosition_mouse.y * this.cameraEasing_mouse * 20
+   
     if (this.mesh) {
       //this.mesh.geometry.attributes.offset.needsUpdate = true
     }

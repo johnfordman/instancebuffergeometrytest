@@ -2,9 +2,12 @@ precision highp float;
 uniform mat4 modelViewMatrix;
 uniform mat4 projectionMatrix;
 attribute vec3 position;
+attribute vec4 color;
 attribute vec3 offset;
 attribute vec3 id;
 uniform float u_time;
+varying vec4 vColor;
+
 vec3 mod289(vec3 x) {
   return x - floor(x * (1.0 / 289.0)) * 289.0;
 }
@@ -131,6 +134,7 @@ vec3 curlNoise( vec3 p ){
 }
 
 void main() {
+    vColor = color;
 //     vec3 newPosition = position + snoise((offset * 10.) + u_time);
     float speed = 5.;
     vec3 vOffset = offset;
