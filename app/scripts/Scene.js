@@ -9,6 +9,7 @@ import CopyShader from 'imports-loader?THREE=three!exports-loader?THREE.CopyShad
 import LuminosityHighPassShader from 'imports-loader?THREE=three!exports-loader?THREE.LuminosityHighPassShader!three/examples/js/shaders/LuminosityHighPassShader' // eslint-disable-line
 import UnrealBloomPass from 'imports-loader?THREE=three!exports-loader?THREE.UnrealBloomPass!three/examples/js/postprocessing/UnrealBloomPass' // eslint-disable-line
 const OrbitControls = require('three-orbit-controls')(THREE)
+import spark from '../textures/spark1.png'
 
 class Scene {
 
@@ -42,14 +43,14 @@ class Scene {
     this.container.appendChild( this.renderer.domElement )
   }
   initScene() {
-    const bufferGeometry = new THREE.SphereBufferGeometry(1, 1, 1)
+    const bufferGeometry = new THREE.SphereBufferGeometry(1.3, 1.3, 1.3)
     // copying data from a simple box geometry, but you can specify a custom geometry if you want
     this.geometry = new THREE.InstancedBufferGeometry()
     this.geometry.attributes.position = bufferGeometry.attributes.position
+    this.geometry.setIndex(bufferGeometry.index);
     this.offsets = []
-    // const colors = []
+    const colors = [new THREE.Color('#FFFFFF'),new THREE.Color('#0000FF'),new THREE.Color('#FF0000'), ]
     this.colors = []
-    const pink = new THREE.Color( '#F4B3C3' ) 
     const vector = new THREE.Vector4()
     let id = 0
     const ids = []
@@ -62,8 +63,9 @@ class Scene {
       vector.set( x, y, z, 0 ).normalize()
       vector.multiplyScalar( 5 )
       this.offsets.push( x + vector.x, y + vector.y, z + vector.z )
-      // this.colors.push(Math.random(), Math.random(), Math.random() )      
-      this.colors.push(pink.r, pink.g, pink.b, Math.random() )      
+      // this.colors.push(Math.random(), Math.random(), Math.random())
+      const randomColor = colors[Math.floor(Math.random() * colors.length)]
+      this.colors.push(randomColor.r, randomColor.g, randomColor.b, Math.random())
       id = i;
       ids.push(i)
     }
@@ -75,6 +77,7 @@ class Scene {
     this.geometry.addAttribute( 'id', idAttribute )
     console.log(this.geometry);
     this.uniforms = {
+      map: { value: new THREE.TextureLoader().load(spark) },
       u_time: { type: "f", value: 1.0 }
     }
     this.material = new THREE.RawShaderMaterial( {
@@ -82,6 +85,7 @@ class Scene {
       vertexShader: vertShader,
       fragmentShader: fragShader,
       side: THREE.DoubleSide,
+      transparent: true
     } )
     this.mesh = new THREE.Mesh( this.geometry, this.material )
     this.scene.add( this.mesh )
