@@ -10,6 +10,7 @@ import LuminosityHighPassShader from 'imports-loader?THREE=three!exports-loader?
 import UnrealBloomPass from 'imports-loader?THREE=three!exports-loader?THREE.UnrealBloomPass!three/examples/js/postprocessing/UnrealBloomPass' // eslint-disable-line
 const OrbitControls = require('three-orbit-controls')(THREE)
 import spark from '../textures/spark1.png'
+import Skybox from './Skybox.js'
 
 class Scene {
 
@@ -18,6 +19,7 @@ class Scene {
     document.body.appendChild( this.container )
     this.init()
     this.initScene()
+    this.initSkybox()
     this.initPostProcessing()
     this.initEvent()
     window.addEventListener('resize', this.onWindowResize.bind(this), false)
@@ -26,7 +28,7 @@ class Scene {
   }
   init() {
     this.camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 0.1, 1000 )
-    this.camera.position.z = 600
+    this.camera.position.z = 200
 
     // Mouse 
     this.mouse = new THREE.Vector2(0,0)
@@ -91,6 +93,10 @@ class Scene {
     this.scene.add( this.mesh )
   }
 
+  initSkybox() {
+    this.Skybox = new Skybox(this.scene)
+  }
+
   initPostProcessing() {
     //POST PROCESSING
     //Create Effects Composer
@@ -129,7 +135,7 @@ class Scene {
       //this.mesh.geometry.attributes.offset.needsUpdate = true
     }
     //this.renderer.render( this.scene, this.camera )
-    this.composer.render()
+     this.composer.render()
 
   }
 
